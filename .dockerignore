@@ -1,0 +1,6 @@
+.git
+.gitignore
+.dockerignore
+*.pyc
+.idea
+venv

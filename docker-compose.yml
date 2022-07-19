@@ -1,0 +1,68 @@
+version: '3.4'
+
+services:
+  baggage_order:
+    container_name: baggage_order
+    image: baggage_order
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - WEB_SERVER_HOST
+      - WEB_SERVER_PORT
+      - LOGSTASH_HOST
+    ports:
+     - "${WEB_SERVER_PORT}:${WEB_SERVER_PORT}"
+    depends_on:
+      - logstash
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 5s
+      retries: 30
+      start_period: 10s
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.11.2
+    restart: "unless-stopped"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9600"]
+      interval: 10s
+      retries: 30
+      start_period: 20s
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.11.2
+    restart: "unless-stopped"
+    env_file: .env
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:5601/"]
+      interval: 5s
+      retries: 30
+      start_period: 20s
+    ports:
+     - "5601:5601"
+
+volumes:
+  elasticsearch-data:
