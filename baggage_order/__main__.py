@@ -12,7 +12,8 @@ def setup_logger():
 
 if __name__ == '__main__':
     setup_logger()
-    print('Start flask (waitress)!')
+    logger = logging.getLogger(__name__)
+    logger.info('Start flask (waitress)!')
     serve(app, host=settings.WEB_SERVER_HOST, port=settings.WEB_SERVER_PORT)
 
 

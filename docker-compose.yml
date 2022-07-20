@@ -1,8 +1,16 @@
 version: '3.4'
 
 services:
+  nginx:
+    image: nginx:1.17.3-alpine
+    volumes:
+     - "./nginx:/etc/nginx/conf.d"
+    ports:
+     - "${WEB_SERVER_PORT}:${WEB_SERVER_PORT}"
+    depends_on:
+      - baggage_order
+
   baggage_order:
-    container_name: baggage_order
     image: baggage_order
     build:
       context: ./
@@ -11,10 +19,10 @@ services:
       - WEB_SERVER_HOST
       - WEB_SERVER_PORT
       - LOGSTASH_HOST
-    ports:
-     - "${WEB_SERVER_PORT}:${WEB_SERVER_PORT}"
     depends_on:
-      - logstash
+      logstash:
+        condition: service_healthy
+    scale: ${WEB_SERVER_SCALE}
 
   elasticsearch:
     container_name: elasticsearch

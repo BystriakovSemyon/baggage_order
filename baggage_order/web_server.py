@@ -4,12 +4,12 @@ import flask
 from flask_smorest import Api
 
 from baggage_order import settings
-from baggage_order.views.orders import orders_blp
+from baggage_order.views.order_skis import order_skis_blp
 
 app = flask.Flask(settings.APP_NAME)
 app.config.update(settings.FLASK_CONFIG)
 api = Api(app)
-api.register_blueprint(orders_blp)
+api.register_blueprint(order_skis_blp)
 
 def swagger_send_static_file(filename):
     """Отдает файлы для swagger-ui"""
