@@ -1,15 +1,42 @@
+import logging
 import os
+import traceback
+from time import strftime
 
 import flask
+from flask import request
 from flask_smorest import Api
 
 from baggage_order import settings
 from baggage_order.views.order_skis import order_skis_blp
+from baggage_order.views.stubs import stubs_blp
 
 app = flask.Flask(settings.APP_NAME)
 app.config.update(settings.FLASK_CONFIG)
 api = Api(app)
 api.register_blueprint(order_skis_blp)
+api.register_blueprint(stubs_blp)
+
+logger = logging.getLogger(__name__)
+
+
+@app.after_request
+def after_request(response):
+    timestamp = strftime('[%Y-%b-%d %H:%M]')
+    response.direct_passthrough = False
+    logger.info(
+        f'{timestamp}, {request.remote_addr}, {request.method}, {request.scheme}, {request.full_path}, {response.status}',
+        extra={'extra': {'response_text': response.get_data(as_text=True)}}
+    )
+    return response
+
+
+@app.errorhandler(Exception)
+def exceptions(e):
+    timestamp = strftime('[%Y-%b-%d %H:%M]')
+    logger.info(f'{timestamp}, {request.remote_addr}, {request.method}, {request.scheme}, {request.full_path}, {traceback.format_exc()}')
+    return e.status_code
+
 
 def swagger_send_static_file(filename):
     """Отдает файлы для swagger-ui"""
@@ -17,7 +44,7 @@ def swagger_send_static_file(filename):
     if not os.path.isdir(swagger_static):
         flask.abort(500)
 
-    cache_timeout =app.get_send_file_max_age(filename)
+    cache_timeout = app.get_send_file_max_age(filename)
     return flask.send_from_directory(
         swagger_static, filename, cache_timeout=cache_timeout
     )

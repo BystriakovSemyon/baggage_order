@@ -4,9 +4,9 @@ import os
 import socket
 import threading
 from logging.handlers import HTTPHandler
-from urllib3.util import Timeout
 
 import requests
+from urllib3.util import Timeout
 
 from baggage_order import settings
 
