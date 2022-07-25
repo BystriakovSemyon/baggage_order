@@ -12,12 +12,12 @@ from baggage_order import settings
 
 
 class LogstashHandler(HTTPHandler):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.http_session = requests.Session()
         self.send_lock = threading.RLock()
 
-    def create_payload(self, record: logging.LogRecord):
+    def create_payload(self, record: logging.LogRecord) -> str:
         log_rec_map = {
             'app_name': settings.APP_NAME,
             'hostname': socket.gethostname(),
@@ -35,7 +35,7 @@ class LogstashHandler(HTTPHandler):
         payload = json.dumps(log_rec_map).encode('utf-8')
         return payload
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         timeout = Timeout(settings.LOGSTASH_LOGGER_HANDLER_TIMEOUT, settings.LOGSTASH_LOGGER_HANDLER_TIMEOUT)
         with self.send_lock:
             try:

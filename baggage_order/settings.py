@@ -3,7 +3,8 @@ import sys
 
 APP_NAME = os.getenv('APP_NAME', 'baggage_order')
 WEB_SERVER_HOST = os.getenv('WEB_SERVER_HOST', '0.0.0.0')
-WEB_SERVER_PORT = os.getenv('WEB_SERVER_PORT', '80')
+WEB_SERVER_PORT = os.getenv('WEB_SERVER_PORT', '8080')
+SKIP_HTTP_LOGS = int(os.getenv('SKIP_HTTP_LOGS', 0))
 
 REST_SWAGGER_UI_ENABLED = os.getenv('REST_SWAGGER_UI_ENABLED', True)
 SWAGGER_STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../swagger-ui')
@@ -50,3 +51,7 @@ LOGGING = {
         'level': 'INFO'
     }
 }
+
+# Skip http handler for tests
+if SKIP_HTTP_LOGS:
+    LOGGING['root']['handlers'] = ['console']

@@ -1,0 +1,343 @@
+openapi: 3.0.2
+info:
+  title: Baggage order
+  version: v1
+tags:
+- name: order_skis
+  description: Бронирование лыж
+- name: stubs
+  description: Заглушки для внешних систем
+paths:
+  "/v1/order_skis/":
+    get:
+      parameters:
+      - in: query
+        name: order_id
+        required: true
+        description: Номер заказа(6ти значная строка из цифр и латинских букв)
+        schema:
+          type: string
+          minLength: 6
+          maxLength: 6
+          pattern: "[a-zA-Z0-9]"
+      - in: query
+        name: second_name
+        required: true
+        description: Фамилия латиницей
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: "[a-zA-Z]"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BagsResponse"
+        '422':
+          "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+        default:
+          "$ref": "#/components/responses/DEFAULT_ERROR"
+      tags:
+      - order_skis
+  "/v1/stubs/orders":
+    get:
+      parameters:
+      - in: query
+        name: passengerId
+        required: true
+        description: Id пассажира(Строка из латинских символов от 1 до 255)
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: "[a-zA-Z]"
+      - in: query
+        name: number
+        required: true
+        description: Номер брони(6ти значная строка из цифр и латинских букв)
+        schema:
+          type: string
+          minLength: 6
+          maxLength: 6
+          pattern: "[a-zA-Z0-9]"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrdersResponse"
+        '422':
+          "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+        default:
+          "$ref": "#/components/responses/DEFAULT_ERROR"
+      tags:
+      - stubs
+  "/v1/stubs/bags":
+    put:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BagsResponse"
+        '422':
+          "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+        default:
+          "$ref": "#/components/responses/DEFAULT_ERROR"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Bags"
+      tags:
+      - stubs
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        status:
+          type: string
+          description: Error name
+        errors:
+          type: object
+          description: Errors
+        code:
+          type: integer
+          description: Error code
+    PaginationMetadata:
+      type: object
+      properties:
+        total:
+          type: integer
+        total_pages:
+          type: integer
+        first_page:
+          type: integer
+        last_page:
+          type: integer
+        page:
+          type: integer
+        previous_page:
+          type: integer
+        next_page:
+          type: integer
+    ShoppingCart:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    BagsResponse:
+      type: object
+      properties:
+        shoppingCart:
+          "$ref": "#/components/schemas/ShoppingCart"
+      required:
+      - shoppingCart
+    Weight:
+      type: object
+      properties:
+        unit:
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: "[A-Z]"
+        amount:
+          type: integer
+    OrderBaggage:
+      type: object
+      properties:
+        registered:
+          type: boolean
+          description: Зарегистрирован
+        weight:
+          "$ref": "#/components/schemas/Weight"
+        id:
+          type: string
+          minLength: 16
+          maxLength: 16
+          pattern: "[a-zA-Z0-9]"
+        equipmentType:
+          type: string
+        overWeight:
+          type: boolean
+        amount:
+          type: integer
+        descriptions:
+          type: array
+          minItems: 1
+          description: Описания
+          items:
+            type: string
+            maxLength: 255
+        unit:
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: "[a-zA-Z0-9]"
+        code:
+          type: string
+          pattern: "[a-zA-Z0-9]"
+      required:
+      - descriptions
+      - overWeight
+      - registered
+    BaggagePricing:
+      type: object
+      properties:
+        passengerIds:
+          type: array
+          minItems: 1
+          description: ''
+          items:
+            type: string
+            minLength: 16
+            maxLength: 16
+            pattern: "[a-zA-Z0-9]"
+        purchaseType:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: "[a-zA-Z]"
+          description: ''
+        baggages:
+          type: array
+          minItems: 1
+          description: ''
+          items:
+            "$ref": "#/components/schemas/OrderBaggage"
+        routeId:
+          type: string
+          minLength: 16
+          maxLength: 16
+          pattern: "[a-zA-Z0-9]"
+        passengerTypes:
+          type: array
+          minItems: 1
+          description: ''
+          items:
+            type: string
+            minLength: 3
+            maxLength: 3
+            pattern: "[A-Z]"
+      required:
+      - baggages
+      - passengerIds
+      - passengerTypes
+      - purchaseType
+    AncillariePrice:
+      type: object
+      properties:
+        airId:
+          type: string
+          format: uuid
+          description: Номер брони(6ти значная строка из цифр и латинских букв)
+        petsDisabled:
+          type: boolean
+          description: Перевоз животных недоступен
+        seatsDisabled:
+          type: boolean
+          description: Места недостапны
+        baggageDisabled:
+          type: boolean
+          description: Багаж недоступен
+        baggagePricings:
+          type: array
+          minItems: 1
+          description: ''
+          items:
+            "$ref": "#/components/schemas/BaggagePricing"
+        loungesDisabled:
+          type: boolean
+        upgradesDisabled:
+          type: boolean
+        mealsDisabled:
+          type: boolean
+          description: Еда недоступна
+        fastTracksDisabled:
+          type: boolean
+      required:
+      - airId
+      - baggageDisabled
+      - baggagePricings
+      - fastTracksDisabled
+      - loungesDisabled
+      - mealsDisabled
+      - petsDisabled
+      - seatsDisabled
+      - upgradesDisabled
+    OrdersResponse:
+      type: object
+      properties:
+        ancillariesPricings:
+          type: array
+          minItems: 1
+          description: ''
+          items:
+            "$ref": "#/components/schemas/AncillariePrice"
+      required:
+      - ancillariesPricings
+    Baggage:
+      type: object
+      properties:
+        redemption:
+          type: boolean
+          description: Выкуплен(true или false)
+        routeId:
+          type: string
+          description: Id маршрута(6ти значная строка из цифр и латинских букв)
+        passengerId:
+          type: string
+          minLength: 16
+          maxLength: 16
+          pattern: "[a-zA-Z0-9]"
+          description: Id пассажира(6ти значная строка из цифр и латинских букв)
+        baggageIds:
+          type: array
+          minItems: 1
+          description: Id багажа(6ти значная строка из цифр и латинских букв)
+          items:
+            type: string
+            minLength: 16
+            maxLength: 16
+            pattern: "[a-zA-Z0-9]"
+      required:
+      - baggageIds
+      - passengerId
+      - redemption
+      - routeId
+    Bags:
+      type: object
+      properties:
+        baggageSelections:
+          type: array
+          minItems: 1
+          description: ''
+          items:
+            "$ref": "#/components/schemas/Baggage"
+      required:
+      - baggageSelections
+  responses:
+    UNPROCESSABLE_ENTITY:
+      description: Unprocessable Entity
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+    DEFAULT_ERROR:
+      description: Default error response
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"

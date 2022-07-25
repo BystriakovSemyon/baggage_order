@@ -27,9 +27,23 @@ class BaggageSchema(Schema):
 
 class BagsSchema(Schema):
     baggageSelections = fields.List(
-        fields.Nested(lambda: BaggageSchema),
+        fields.Nested(
+            lambda: BaggageSchema,
+            required=True
+        ),
         required=True,
         data_key='baggageSelections',
         validate=validate.Length(min=1),
         metadata={'description': ''}
+    )
+
+
+class ShoppingCartSchema(Schema):
+    status = fields.String(required=True)
+
+
+class BagsResponseSchema(Schema):
+    shoppingCart = fields.Nested(
+        lambda: ShoppingCartSchema,
+        required=True
     )

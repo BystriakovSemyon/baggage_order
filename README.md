@@ -9,11 +9,15 @@
  - для удобства тестирования заглушки добавлены методами АПИ сервиса 
 
 ### Уточнения задания:
- - В задании querystring = {"number":"AAAAAA","passengerId":"ivanov"}, passengerId - это фамилия,
+ - в задании querystring = {"number":"AAAAAA","passengerId":"ivanov"}, passengerId - это фамилия,
   но по ответам из примеров видно что это не фамилия, а 16-ти символьная строка из литинских букв и цифр.
    Из-за противоречивой информации сервис проверяет длину строки не в 16 символов, а 255, так же проверяем что  числа быть не могут.   
+ - если в ответе сервиса /orders baggagePricings->baggages есть несколько альтернативных предложений по провозу лыж, мы берем все
+ - может оказаться что на каком-то из flight/route нет возможности провезти лыжи, это не является ошибкой
+ - поле redemption в запросе к /bags всегда false
+ - заглушки работают только для запроса querystring = {"number":"AAAAAA","passengerId":"ivanov"}, для остальных 404
 
-### Для внешних зависимостей использовались следующие заглушки
+ ### Для внешних зависимостей использовались следующие заглушки
 <details><summary>/orders</summary>
 <p>
 
@@ -260,12 +264,11 @@ http://localhost:5601/app/discover
 
 </p>
 </details>
-<details><summary>Работа в Kiban</summary>
+<details><summary>Запрос в Swagger + логи в Kibana</summary>
 <p>
 
-![Шаг 1](https://github.com/BystriakovSemyon/baggage_order/blob/develop/readme_static/Step_1.png)
-![Шаг 2](https://github.com/BystriakovSemyon/baggage_order/blob/develop/readme_static/Step_2.png)
-![Шаг 3](https://github.com/BystriakovSemyon/baggage_order/blob/develop/readme_static/Step_3.png)
+![Шаг 4](https://github.com/BystriakovSemyon/baggage_order/blob/develop/readme_static/Step_4.png)
+![Шаг 5](https://github.com/BystriakovSemyon/baggage_order/blob/develop/readme_static/Step_6.png)
 
 </p>
 </details>
@@ -273,17 +276,9 @@ http://localhost:5601/app/discover
 ## Запустить тесты
 Тесты запускаются в докере:
 ```
-docker-compose up -d
+docker-compose -f docker-compose-run-tests.yml --env-file .test-env up -d
 ```
 Отчет о тестировании сохраняется в:
 ```
-./
+./test_reports
 ```
-
-# TODO
-- закончить с основным сценарием и описать его в README
-- добавить тесты в докере
-- добавить остановку сервиса 
-- добавить open api спецификацию 
-- проверить typing
-- проверить нагрузку 

@@ -5,7 +5,6 @@ services:
     image: nginx:1.17.3-alpine
     volumes:
      - "./nginx:/etc/nginx/conf.d"
-#     - "./swagger-ui:/app/swagger-ui"
     ports:
      - "${WEB_SERVER_PORT}:${WEB_SERVER_PORT}"
     depends_on:

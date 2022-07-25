@@ -20,7 +20,7 @@ class WeightSchema(Schema):
     unit = fields.String(validate=[validate.Length(equal=2), validate.Regexp('[A-Z]')])
 
 
-class BaggageSchema(Schema):
+class OrderBaggageSchema(Schema):
     id = fields.String(validate=[validate.Length(equal=16), validate.Regexp('[a-zA-Z0-9]')])
     overWeight = fields.Boolean(required=True)
     amount = fields.Int()
@@ -63,7 +63,10 @@ class BaggagePricingSchema(Schema):
     )
     routeId = fields.String(validate=[validate.Length(equal=16), validate.Regexp('[a-zA-Z0-9]')])
     baggages = fields.List(
-        fields.Nested(lambda: BaggageSchema),
+        fields.Nested(
+            lambda: OrderBaggageSchema,
+            required=True
+        ),
         required=True,
         data_key='baggages',
         validate=validate.Length(min=1),
@@ -76,7 +79,10 @@ class AncillariePriceSchema(Schema):
         metadata={'description': 'Номер брони(6ти значная строка из цифр и латинских букв)'}
     )
     baggagePricings = fields.List(
-        fields.Nested(lambda: BaggagePricingSchema),
+        fields.Nested(
+            lambda: BaggagePricingSchema,
+            required=True
+        ),
         required=True,
         data_key='baggagePricings',
         validate=validate.Length(min=1),
@@ -105,7 +111,10 @@ class AncillariePriceSchema(Schema):
 
 class OrdersResponseSchema(Schema):
     ancillariesPricings = fields.List(
-        fields.Nested(lambda: AncillariePriceSchema),
+        fields.Nested(
+            lambda: AncillariePriceSchema,
+            required=True
+        ),
         required=True,
         data_key='ancillariesPricings',
         validate=validate.Length(min=1),

@@ -1,0 +1,6 @@
+COMPOSE_PROJECT_NAME=test_baggage_order
+DOCKER_REGISTRY_NAME=test_baggage_order
+
+## baggage_order
+WEB_SERVER_HOST=0.0.0.0
+WEB_SERVER_PORT=8080

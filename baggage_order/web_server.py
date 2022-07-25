@@ -21,24 +21,32 @@ logger = logging.getLogger(__name__)
 
 
 @app.after_request
-def after_request(response):
+def after_request(response: flask.Response) -> flask.Response:
+    """Log all requests-response"""
     timestamp = strftime('[%Y-%b-%d %H:%M]')
     response.direct_passthrough = False
     logger.info(
         f'{timestamp}, {request.remote_addr}, {request.method}, {request.scheme}, {request.full_path}, {response.status}',
-        extra={'extra': {'response_text': response.get_data(as_text=True)}}
+        extra={'extra': {
+            'response_text': response.get_data(as_text=True),
+            'request_text': request.get_data(as_text=True)
+        }}
     )
     return response
 
 
 @app.errorhandler(Exception)
-def exceptions(e):
+def exceptions(e) -> int:
+    """Log all exceptions"""
     timestamp = strftime('[%Y-%b-%d %H:%M]')
-    logger.info(f'{timestamp}, {request.remote_addr}, {request.method}, {request.scheme}, {request.full_path}, {traceback.format_exc()}')
+    logger.exception(
+        f'{timestamp}, {request.remote_addr}, {request.method}, {request.scheme}, {request.full_path}, {traceback.format_exc()}',
+        extra={'extra': {'request_text': request.get_data(as_text=True)}}
+    )
     return e.status_code
 
 
-def swagger_send_static_file(filename):
+def swagger_send_static_file(filename: str):
     """Отдает файлы для swagger-ui"""
     swagger_static = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../swagger-ui')
     if not os.path.isdir(swagger_static):
@@ -49,7 +57,6 @@ def swagger_send_static_file(filename):
         swagger_static, filename, cache_timeout=cache_timeout
     )
 
-# В README требованиях сервиса описано это ограничение
 app.add_url_rule(
     settings.FLASK_CONFIG['OPENAPI_SWAGGER_UI_URL'] + '<path:filename>',
     endpoint='swagger-static',

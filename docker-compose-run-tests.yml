@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  baggage_order:
+    image: baggage_order
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: ["/opt/venv/bin/pytest", "-vv", "--junitxml=/opt/app/test_reports/testresult.xml"]
+    volumes:
+      - ./test_reports:/opt/app/test_reports
+    environment:
+      - WEB_SERVER_HOST
+      - WEB_SERVER_PORT
+      - SKIP_HTTP_LOGS=1
